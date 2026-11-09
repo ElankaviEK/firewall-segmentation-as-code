@@ -1,0 +1,16 @@
+# Files Python and uv create automatically - we never want these in git.
+# (In .gitignore, a comment must be on its own line, starting with #.)
+
+# The virtual environment (installed packages)
+.venv/
+
+# Compiled Python files
+__pycache__/
+*.pyc
+
+# pytest's temporary data
+.pytest_cache/
+
+# Build output
+*.egg-info/
+dist/

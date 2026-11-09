@@ -1,0 +1,24 @@
+[project]
+name = "fwseg"
+version = "0.1.0"
+description = "Generate default-deny nftables firewall rules from a YAML zone policy"
+readme = "README.md"
+authors = [
+    { name = "ElanKaviperumal", email = "elankaviperumal.ie@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pyyaml>=6.0.3",
+]
+
+[project.scripts]
+fwseg = "fwseg:main"
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
