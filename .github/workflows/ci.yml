@@ -18,7 +18,8 @@ jobs:
       - uses: actions/checkout@v7
 
       # Install uv (the tool we use instead of pip/venv).
-      - uses: astral-sh/setup-uv@v10
+      # setup-uv has no short "v10" tag, so we pin the exact version.
+      - uses: astral-sh/setup-uv@v10.3.3
 
       # Install Python 3.12 and the project's packages (pyyaml, pytest).
       - run: uv sync
@@ -33,7 +34,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.3
       - run: uv sync
 
       # Make sure the tools the lab uses are installed:
