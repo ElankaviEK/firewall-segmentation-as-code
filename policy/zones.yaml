@@ -1,0 +1,25 @@
+# Firewall segmentation policy.
+#
+# This file is the "source of truth": the Python code reads it and
+# generates nftables rules from it. To change the firewall, edit this
+# file, not the rules.
+
+# Each zone is a network segment with its own IP range (subnet).
+# "/24" means the first 3 numbers are fixed, so 10.0.10.0/24 covers
+# 10.0.10.0 to 10.0.10.255.
+zones:
+  users:   { subnet: 10.0.10.0/24 }   # staff laptops
+  servers: { subnet: 10.0.20.0/24 }   # internal apps and database
+  dmz:     { subnet: 10.0.30.0/24 }   # public-facing web server
+  mgmt:    { subnet: 10.0.99.0/24 }   # admins
+
+# Default-deny: ONLY these flows are allowed. Everything else is dropped.
+# Each rule means: "machines in <from> may START a connection to
+# machines in <to> on these ports". Replies are allowed automatically.
+allow:
+  - { from: users, to: dmz,     proto: tcp, ports: [80, 443] }  # browse the website
+  - { from: users, to: servers, proto: tcp, ports: [443] }      # use internal apps
+  - { from: dmz,   to: servers, proto: tcp, ports: [5432] }     # web server -> database
+  - { from: mgmt,  to: users,   proto: tcp, ports: [22] }       # admins SSH everywhere
+  - { from: mgmt,  to: servers, proto: tcp, ports: [22] }
+  - { from: mgmt,  to: dmz,     proto: tcp, ports: [22] }
