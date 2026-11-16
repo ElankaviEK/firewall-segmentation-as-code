@@ -1,0 +1,51 @@
+# CI workflow: GitHub runs this automatically to test the project.
+# The ✅ / ❌ next to each commit on GitHub comes from here.
+
+name: CI
+
+# WHEN to run: on every push to main, and on every pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # Job 1: the normal Python tests (fast, no root needed).
+  unit-tests:
+    runs-on: ubuntu-24.04          # a fresh Ubuntu machine, same as your WSL
+    steps:
+      # Download the project's code onto the machine.
+      - uses: actions/checkout@v7
+
+      # Install uv (the tool we use instead of pip/venv).
+      - uses: astral-sh/setup-uv@v10
+
+      # Install Python 3.12 and the project's packages (pyyaml, pytest).
+      - run: uv sync
+
+      # Run all the pytest tests. If one fails, the job fails (❌).
+      - run: uv run pytest -v
+
+  # Job 2: build the namespace lab and send real traffic through
+  # the generated firewall rules.
+  lab-test:
+    needs: unit-tests              # only run if Job 1 passed
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync
+
+      # Make sure the tools the lab uses are installed:
+      # nft (nftables) and nc (netcat-openbsd).
+      - run: sudo apt-get update && sudo apt-get install -y nftables netcat-openbsd
+
+      # Build the lab. On GitHub's machines, sudo needs no password.
+      - run: sudo bash lab/setup.sh
+
+      # Test the traffic. Exits with code 1 (❌) if any check fails.
+      - run: sudo bash lab/test_traffic.sh
+
+      # Clean up. "always()" means run this even if the test failed.
+      - if: always()
+        run: sudo bash lab/teardown.sh
